@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NU METAL ROLETA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#cc0000">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { 
+      --blood: #cc0000; 
+      --dark-blood: #660000;
+      --metal: #1a1a1a; 
+      --steel: #4a4a4a;
+      --neon-red: #ff1a1a;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background-color: #030303;
+      font-family: 'Anton','Impact',sans-serif;
+      color: #fff; overflow-x: hidden; position: relative;
+    }
+
+    /* GRUNGE / NOISE OVERLAY */
+    body::after {
+      content: "";
+      position: fixed; inset: 0;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+      opacity: 0.08;
+      pointer-events: none; z-index: 999;
+    }
+
+    /* SCANLINES */
+    body::before {
+      content: ""; position: fixed; inset: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 4px, 3px 100%;
+      pointer-events: none; z-index: 998;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 40px;
+      padding: 50px 16px; width: 100%;
+    }
+
+    /* TITLE GLITCH EFFECT */
+    .title-wrap { text-align: center; line-height: 1; text-transform: uppercase; position: relative; }
+    .title-main {
+      font-family: 'Bebas Neue','Anton',sans-serif;
+      font-size: clamp(60px, 10vw, 120px); letter-spacing: 2px;
+      color: #fff;
+      position: relative;
+      text-shadow: 4px 4px 0px var(--dark-blood);
+    }
+    .title-main::before, .title-main::after {
+      content: 'NU METAL ROLETA';
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #030303;
+    }
+    .title-main::before {
+      left: 2px; text-shadow: -2px 0 var(--neon-red);
+      clip-path: polygon(0 20%, 100% 20%, 100% 25%, 0 25%);
+      animation: glitch-anim 2.5s infinite linear alternate-reverse;
+    }
+    .title-main::after {
+      left: -2px; text-shadow: -2px 0 #fff;
+      clip-path: polygon(0 60%, 100% 60%, 100% 65%, 0 65%);
+      animation: glitch-anim 3s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch-anim {
+      0% { clip-path: polygon(0 20%, 100% 20%, 100% 25%, 0 25%); transform: translate(0); }
+      10% { clip-path: polygon(0 60%, 100% 60%, 100% 65%, 0 65%); transform: translate(-2px, 2px); }
+      20% { clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%); transform: translate(2px, -2px); }
+      30% { clip-path: polygon(0 80%, 100% 80%, 100% 85%, 0 85%); transform: translate(0); }
+      100% { clip-path: polygon(0 30%, 100% 30%, 100% 35%, 0 35%); }
+    }
+
+    .title-sub {
+      font-family: 'Oswald',sans-serif; font-size: clamp(16px, 2.5vw, 22px);
+      letter-spacing: 12px; color: #555; margin-top: 10px; font-weight: 900;
+      background: #111; display: inline-block; padding: 5px 15px; border: 1px solid #333;
+    }
+
+    /* WHEEL - BUZZSAW STYLE */
+    .wheel-section { position: relative; display: flex; align-items: center; justify-content: center; }
+    .pointer {
+      position: absolute; top: -35px; left: 50%;
+      transform: translateX(-50%); z-index: 20;
+      filter: drop-shadow(0 10px 10px rgba(0,0,0,0.8));
+    }
+    .outer-ring {
+      width: 580px; height: 580px; border-radius: 50%;
+      background: repeating-conic-gradient(from 0deg, #111 0deg 15deg, #0a0a0a 15deg 30deg);
+      padding: 12px;
+      border: 8px solid #222;
+      box-shadow: 0 0 80px rgba(200, 0, 0, 0.15), inset 0 0 20px rgba(0,0,0,1);
+      position: relative;
+    }
+    /* Saw teeth illusion */
+    .outer-ring::before {
+      content: ''; position: absolute; inset: -15px; border-radius: 50%;
+      border: 4px dashed #333; pointer-events: none;
+    }
+    .inner-ring {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: #000; padding: 4px;
+      border: 4px solid var(--dark-blood); overflow: hidden;
+    }
+    #wheel-wrap {
+      width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+      transform-origin: center center;
+      transition: transform 4.5s cubic-bezier(0.1, 0.8, 0.1, 1.05);
+    }
+    #wheel-wrap svg { width: 100%; height: 100%; display: block; }
+
+    /* BUTTON - INDUSTRIAL PEDAL */
+    .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: -10px; z-index: 10; }
+    #spin-btn {
+      font-family: 'Anton', sans-serif;
+      font-size: 32px; letter-spacing: 4px; color: #fff; text-transform: uppercase;
+      background: linear-gradient(to bottom, #333, #111);
+      border: none;
+      padding: 20px 80px; cursor: pointer;
+      position: relative;
+      clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -4px 0 rgba(0,0,0,0.8);
+      transition: background 0.1s;
+    }
+    #spin-btn::after {
+      content: ''; position: absolute; inset: 2px;
+      background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.2) 10px, rgba(0,0,0,0.2) 20px);
+      pointer-events: none;
+    }
+    #spin-btn:hover { background: linear-gradient(to bottom, #444, #1a1a1a); color: var(--neon-red); }
+    #spin-btn:active {
+      transform: translateY(4px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+    }
+    #spin-btn:disabled { color: #555; background: #111; cursor: not-allowed; transform: none; }
+
+    /* RESULT CARD - ANGULAR / METAL SHEET */
+    #result-card {
+      width: min(750px, 95vw);
+      background: #080808;
+      border: 2px solid #222; 
+      padding: 40px; text-align: left;
+      opacity: 0; transform: scale(0.95) translateY(30px);
+      transition: all .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+      clip-path: polygon(30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 30px);
+      position: relative;
+    }
+    #result-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 100%;
+      background: var(--blood);
+    }
+    #result-card.show { opacity:1; transform:scale(1) translateY(0); pointer-events:auto; }
+
+    .res-band {
+      font-family:'Bebas Neue','Anton',sans-serif;
+      font-size:clamp(40px, 8vw, 70px); letter-spacing:4px; color:#fff;
+      line-height:0.9; text-shadow: 3px 3px 0 var(--dark-blood);
+      text-transform: uppercase;
+    }
+    .res-msg {
+      font-family:'Oswald',sans-serif; font-size: 16px;
+      color:#777; margin-top:10px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px;
+      border-bottom: 2px dashed #222; padding-bottom: 20px;
+    }
+    
+    .res-albums { display:flex; gap:15px; margin-bottom:25px; flex-wrap: wrap; }
+    .album-pill { 
+      font-family:'Oswald',sans-serif; font-size:15px; font-weight: 900; color:#555; 
+      background: #000; border: 2px solid #333; padding: 10px 20px; 
+      cursor:pointer; transition: all .2s; text-transform: uppercase;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+    .album-pill:hover { border-color: #666; color: #ccc; }
+    .album-pill.active { background: var(--dark-blood); border-color: var(--neon-red); color: #fff; }
+    
+    .res-songs-title {
+      font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:6px;
+      color:#444; text-transform:uppercase; margin-bottom:15px; font-weight: 900;
+    }
+    .res-songs { display:flex; flex-direction: column; gap:8px; margin-bottom:35px; }
+    .track-btn { 
+      font-family:'Oswald',sans-serif; font-size:18px; font-weight: 700; color:#aaa; 
+      background: #0a0a0a; border: 1px solid #1a1a1a; border-left: 4px solid #333;
+      padding: 15px 20px; cursor:pointer; transition: all .2s;
+      text-align: left; display: flex; justify-content: space-between; align-items: center;
+      text-transform: uppercase;
+    }
+    .track-btn::after { 
+      content: '▶ TOCAR NO APP'; font-size: 12px; color: #1DB954; 
+      opacity: 0; transition: opacity .2s; letter-spacing: 2px; 
+    }
+    .track-btn:hover { background: #111; border-left-color: #1DB954; color: #fff; padding-left: 25px; }
+    .track-btn:hover::after { opacity: 1; }
+
+    /* SPOTIFY ARTIST BUTTON */
+    #spotify-btn {
+      display: none; align-items: center; justify-content: center; width: 100%;
+      background: #000; border: 2px solid #1DB954;
+      padding: 20px; cursor: pointer; text-decoration: none; transition: all .2s;
+      clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+    }
+    #spotify-btn:hover { background: #1DB954; }
+    #spotify-btn:hover .spotify-text { color: #000; }
+    #spotify-btn.active { display: flex; }
+    .spotify-text {
+      font-family:'Oswald',sans-serif; font-size:18px; font-weight: 900; letter-spacing:3px;
+      color:#1DB954; text-transform:uppercase; transition: color .2s;
+    }
+
+    @media(max-width:650px){ .outer-ring{width:360px;height:360px;} #spin-btn { padding: 15px 40px; font-size: 24px; } }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="title-wrap">
+    <span class="title-main">NU METAL ROLETA</span>
+    <div class="title-sub">SISTEMA COMPROMETIDO</div>
+  </div>
+
+  <div class="wheel-section">
+    <div class="pointer">
+      <svg width="50" height="70" viewBox="0 0 50 70">
+        <polygon points="25,70 0,0 50,0" fill="#cc0000" stroke="#ff1a1a" stroke-width="2"/>
+        <polygon points="25,55 10,0 40,0" fill="#222"/>
+        <circle cx="25" cy="15" r="4" fill="#000"/>
+      </svg>
+    </div>
+    <div class="outer-ring">
+      <div class="inner-ring">
+        <div id="wheel-wrap">
+          <svg id="wheel-svg" viewBox="0 0 520 520"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="spin-btn">GIRAR A MÁQUINA</button>
+  </div>
+
+  <div id="result-card">
+    <div class="res-band" id="res-band"></div>
+    <div class="res-msg" id="res-msg"></div>
+    
+    <div class="res-albums" id="res-albums"></div>
+    <div class="res-songs-title" id="res-album-title">Álbum</div>
+    <div class="res-songs" id="res-songs"></div>
+
+    <a id="spotify-btn" href="#" target="_blank" rel="noopener">
+      <div class="spotify-text" id="spotify-link-text">ABRIR BANDA NO APP</div>
+    </a>
+  </div>
+</div>
+
+<script>
+// Array Completo com todas as Bandas estruturadas
+// As que estão com ID tocam direto. As que estão em branco usam a busca automática pra não dar erro.
+const BANDS = [
+  {
+    name:'LINKIN PARK', icon:'LP', msg:'Híbrido de rap, rock e angústia pura.',
+    albums:[
+      {
+        title:'Hybrid Theory', year:'2000',
+        tracks:[
+          { name: 'Papercut', id: '1Vej0qeQ3ioKwpI6FUbRv1' },
+          { name: 'One Step Closer', id: '3K4HG9evC7dg3N0R9cYqk4' },
+          { name: 'Crawling', id: '57BrRMwf9LrcmuOsyGilwr' },
+          { name: 'In the End', id: '60a0Rd6pjrkxjPbaKzXjfq' },
+          { name: 'A Place for My Head', id: '5rAxhWcgFng3s570sGO2F8' }
+        ]
+      },
+      {
+        title:'Meteora', year:'2003',
+        tracks:[
+          { name: 'Somewhere I Belong', id: '3fjmSxt0PskST13CSdBUFx' },
+          { name: 'Numb', id: '2nLtzopw4rPReszdYBJU6h' },
+          { name: 'Breaking the Habit', id: '3dxiWIBVJRlqh9xk144rf4' },
+          { name: 'Faint', id: '7AB0cUXnzuSlAnyHOqmrZr' },
+          { name: 'From the Inside', id: '697M5JB8FDIyRXEXgl1pBZ' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'KORN', icon:'KORN', msg:'O abismo escuro do Jonathan Davis.',
+    albums:[
+      {
+        title:'Follow the Leader', year:'1998',
+        tracks:[
+          { name: 'Freak on a Leash', id: '6W21LNLz9Sw7sUSNWMSHRu' },
+          { name: 'Got the Life', id: '6nJPHXRpKYv2yqtalEjKy5' },
+          { name: 'Children of the Korn', id: '72ZarLfZuVXLa2VN1jzAWk' },
+          { name: 'B.B.K.', id: '2Djbx0U7eJ7Lnd8Pq6Vf0y' },
+          { name: 'Pretty', id: '27qsQGjOEBiVoZJB1ViI4Y' }
+        ]
+      },
+      {
+        title:'Issues', year:'1999',
+        tracks:[
+          { name: 'Falling Away from Me', id: '2F6FfZ4w8z3eJpSxPotVO5' },
+          { name: 'Make Me Bad', id: '286ek1kspX7VFaheXFSvPk' },
+          { name: 'Somebody Someone', id: '4V78u7Pbx6G33eej60wwOK' },
+          { name: 'Hey Daddy', id: '0mso7AHSDbdMadC1wCVhcu' },
+          { name: 'Counting', id: '1WAdq62hIVZ59nUIsjAzKW' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'SLIPKNOT', icon:'SK', msg:'O peso sonoro mais brutal em 9 máscaras.',
+    albums:[
+      {
+        title:'Slipknot', year:'1999',
+        tracks:[
+          { name: 'Wait and Bleed', id: '15DLl1r2zi07Ssq5RT1yT0' },
+          { name: 'Spit It Out', id: '2yTnWN1R5j6grXC8YLf5mc' },
+          { name: 'Eyeless', id: '2yYX7KbfWZrezWVW1vN3iz' },
+          { name: 'Surfacing', id: '7ilvmUhG4jmCuJV4ZvjkKT' },
+          { name: 'Tattered & Torn', id: '3kY2ULzGKBkT5LzaDDGh40' }
+        ]
+      },
+      {
+        title:'Vol. 3: (The Subliminal Verses)', year:'2004',
+        tracks:[
+          { name: 'Duality', id: '4sJXjrsmVukiwVgPPxBCsB' },
+          { name: 'Before I Forget', id: '6wqJeItl3Vc3az4ZicSQAB' },
+          { name: 'Vermilion', id: '0fX9KPa0i9RGDI59gI90i9' },
+          { name: 'The Blister Exists', id: '3q7GKmKaiktt57PVIxKOm8' },
+          { name: 'Pulse of the Maggots', id: '0at89DgpVeImkVrQ0htbVm' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'SYSTEM OF A DOWN', icon:'SOAD', msg:'Política, caos e velocidade absurda.',
+    albums:[
+      {
+        title:'Toxicity', year:'2001',
+        tracks:[
+          { name: 'Prison Song', id: '3AwLxSqo1jOOMpNsgxqRNE' },
+          { name: 'Needles', id: '6V8oQXzymTzpEZOsiBiyJT' },
+          { name: 'Deer Dance', id: '2SpGXD7EbexndFmmThrnsy' },
+          { name: 'Toxicity', id: '0snQkGI5qnAmohLE7jTsTn' },
+          { name: 'Aerials', id: '4e9eGQYsOiBcftrWXwsVco' }
+        ]
+      },
+      {
+        title:'Mezmerize', year:'2005',
+        tracks:[
+          { name: 'Soldier Side', id: '1ez4uWPnJwYufNhYTLVsJr' },
+          { name: 'B.Y.O.B.', id: ' 0EYOdF5FCkgOJJla8DI2Md' },
+          { name: 'Revenga', id: '577mOFb1LAvSANIUZ4mbQ7' },
+          { name: 'Cigaro', id: '47EqCQZG5v4o0WFMufGf5S' },
+          { name: 'Question!', id: '6y2DHyCYf6azhUfXmnuH6w' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'LIMP BIZKIT', icon:'LB', msg:'A fúria incontrolável de Fred Durst.',
+    albums:[
+      {
+        title:'Significant Other', year:'1999',
+        tracks:[
+          { name: 'Nookie', id: '1TEZWG1FdjzDdercCguTwj' },
+          { name: 'Break Stuff', id: '1iwbpQYIFDNAoB1CKffutx' },
+          { name: 'Re-Arranged', id: '6IPJ7LeWIOhxPW8Sq3nIGc' },
+          { name: 'N 2 Gether Now', id: '5SEBSAio1N77Vbrj1cAEGb' },
+          { name: 'Take a Look Around', id: '2avKuMN2QXkaG9vvHa2JLt' }
+        ]
+      },
+      {
+        title:'Chocolate Starfish', year:'2000',
+        tracks:[
+          { name: 'My Generation', id: '0CK1MKqYEgz0MjjJk57nxo' },
+          { name: 'Rollin', id: '0CVODACKMJIM77PIIML0HA' },
+          { name: 'My Way', id: '2gSVKxPDww9Eep5rdvtdem' },
+          { name: 'Boiler', id: '1a3RarhRdrNSTEEERYEFJn' },
+          { name: 'No Sex', id: '0BW0O5BthNhAVR3uwvdMW8' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'DEFTONES', icon:'DEF', msg:'Peso colossal misturado com melancolia.',
+    albums:[
+      {
+        title:'Around the Fur', year:'1997',
+        tracks:[
+          { name: 'My Own Summer', id: '1158ckiB5S4cpsdYHDB9IF' },
+          { name: 'Be Quiet and Drive', id: '4Uiw0Sl9yskBaC6P4DcdVD' },
+          { name: 'Around the Fur', id: '3Fwe3XoPOiyWUPYdBKMTqV' },
+          { name: 'Rickets', id: '7Ca5yTC81P0AtRnNKHKzwJ' },
+          { name: 'Lhabia', id: '28q0pUwcJRS2tGZsYH6xL5' }
+        ]
+      },
+      {
+        title:'White Pony', year:'2000',
+        tracks:[
+          { name: 'Elite', id: '3jnYlchDDAiLzfkPPy12ig' },
+          { name: 'Digital Bath', id: '2jSJm3Gv6GLxduWLenmjKS' },
+          { name: 'Change', id: '51c94ac31swyDQj9B3Lzs3' },
+          { name: 'Passenger', id: '7IoK6jZBxY7NMoQPoPXZCF' },
+          { name: 'Knife Prty', id: '42Kv1RoTAm09FeytxiuZIB' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'PAPA ROACH', icon:'PR', msg:'Cortando tudo em pedaços.',
+    albums:[
+      {
+        title:'Infest', year:'2000',
+        tracks:[
+          { name: 'Last Resort', id: '' },
+          { name: 'Broken Home', id: '' },
+          { name: 'Between Angels and Insects', id: '' },
+          { name: 'Dead Cell', id: '' },
+          { name: 'Revenge', id: '' }
+        ]
+      },
+      {
+        title:'Lovehatetragedy', year:'2002',
+        tracks:[
+          { name: 'She Loves Me Not', id: '' },
+          { name: 'Helpless', id: '' },
+          { name: 'Time and Time Again', id: '' },
+          { name: 'Walking Thru Barbed Wire', id: '' },
+          { name: 'M-80', id: '' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'MUDVAYNE', icon:'MUD', msg:'Baixo insano e matemática pesada.',
+    albums:[
+      {
+        title:'L.D. 50', year:'2000',
+        tracks:[
+          { name: 'Dig', id: '' },
+          { name: 'Nothing to Gein', id: '' },
+          { name: 'Death Blooms', id: '' },
+          { name: 'Routines', id: '' },
+          { name: 'Hive', id: '' }
+        ]
+      },
+      {
+        title:'The End of All Things...', year:'2002',
+        tracks:[
+          { name: 'Not Falling', id: '' },
+          { name: 'World So Cold', id: '' },
+          { name: 'Immortal', id: '' },
+          { name: 'Hip to Be Scared', id: '' },
+          { name: 'Determined', id: '' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'DISTURBED', icon:'DST', msg:'Vocais animalescos e riffs pesados.',
+    albums:[
+      {
+        title:'The Sickness', year:'2000',
+        tracks:[
+          { name: 'Down with the Sickness', id: '' },
+          { name: 'Stupify', id: '' },
+          { name: 'Voices', id: '' },
+          { name: 'The Game', id: '' },
+          { name: 'Fear', id: '' }
+        ]
+      },
+      {
+        title:'Ten Thousand Fists', year:'2005',
+        tracks:[
+          { name: 'Guarded', id: '' },
+          { name: 'Just Stop', id: '' },
+          { name: 'Land of Confusion', id: '' },
+          { name: 'Prayer', id: '' },
+          { name: 'Criminal', id: '' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'P.O.D.', icon:'POD', msg:'Batendo cabeça com groove.',
+    albums:[
+      {
+        title:'Satellite', year:'2001',
+        tracks:[
+          { name: 'Alive', id: '' },
+          { name: 'Youth of the Nation', id: '' },
+          { name: 'Boom', id: '' },
+          { name: 'Satellite', id: '' },
+          { name: 'Set Your Eyes', id: '' }
+        ]
+      },
+      {
+        title:'Murdered Love', year:'2012',
+        tracks:[
+          { name: 'Murdered Love', id: '' },
+          { name: 'Lost in Forever', id: '' },
+          { name: 'Celebration of a Warrior', id: '' },
+          { name: 'Warriors', id: '' },
+          { name: 'I Am', id: '' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'DROWNING POOL', icon:'DP', msg:'Deixe os corpos caírem no chão.',
+    albums:[
+      {
+        title:'Sinner', year:'2001',
+        tracks:[
+          { name: 'Bodies', id: '' },
+          { name: 'Let the Bodies Hit the Floor', id: '' },
+          { name: 'Sinner', id: '' },
+          { name: 'Tear Away', id: '' },
+          { name: 'Feels Like a Suicide', id: '' }
+        ]
+      },
+      {
+        title:'Desensitized', year:'2004',
+        tracks:[
+          { name: 'Step Up', id: '' },
+          { name: 'Sinner (live)', id: '' },
+          { name: 'Love and War', id: '' },
+          { name: 'No More', id: '' },
+          { name: 'Leave It Alone', id: '' }
+        ]
+      }
+    ]
+  },
+  {
+    name:'STATIC-X', icon:'STX', msg:'Metal mecânico, industrial e violento.',
+    albums:[
+      {
+        title:'Wisconsin Death Trip', year:'1999',
+        tracks:[
+          { name: 'Push It', id: '' },
+          { name: 'Im with Stupid', id: '' },
+          { name: 'Bled for Days', id: '' },
+          { name: 'Black and White', id: '' },
+          { name: 'Love Dump', id: '' }
+        ]
+      },
+      {
+        title:'Machine', year:'2001',
+        tracks:[
+          { name: 'The Only', id: '' },
+          { name: 'Cold', id: '' },
+          { name: 'This Is Not', id: '' },
+          { name: 'I Am', id: '' },
+          { name: 'Black and White', id: '' }
+        ]
+      }
+    ]
+  }
+];
+
+// BUILD WHEEL (DARK INDUSTRIAL)
+const N=BANDS.length, STEP=360/N, CX=260, CY=260, R=248;
+const NS='http://www.w3.org/2000/svg';
+function polar(cx,cy,r,d){const a=(d-90)*Math.PI/180;return{x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)};}
+function arc(cx,cy,r,a1,a2){const s=polar(cx,cy,r,a1),e=polar(cx,cy,r,a2),lg=(a2-a1)>180?1:0;return`M${cx},${cy} L${s.x.toFixed(2)},${s.y.toFixed(2)} A${r},${r} 0 ${lg} 1 ${e.x.toFixed(2)},${e.y.toFixed(2)} Z`;}
+function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(txt)e.textContent=txt;return e;}
+
+const svg=document.getElementById('wheel-svg');
+const sectors=[];
+
+BANDS.forEach((b,i)=>{
+  const a1=i*STEP, a2=a1+STEP, mid=a1+STEP/2;
+  const fill = i % 2 === 0 ? '#141414' : '#0a0a0a'; 
+  const p=el('path',{d:arc(CX,CY,R,a1,a2), fill:fill, stroke:'#2a2a2a', 'stroke-width':'3'});
+  svg.appendChild(p); sectors.push(p);
+  
+  const tp=polar(CX,CY,R*0.78,mid), rot=(mid>90&&mid<270)?mid+180:mid;
+  svg.appendChild(el('text',{
+    x:tp.x.toFixed(2), y:tp.y.toFixed(2), 
+    'text-anchor':'middle', 'dominant-baseline':'middle', 
+    transform:`rotate(${rot},${tp.x.toFixed(2)},${tp.y.toFixed(2)})`,
+    'font-size': b.name.length > 12 ? '15' : '18', 
+    'font-weight':'900', 'font-family':'Anton, Impact, sans-serif', 
+    fill:'#555', 'letter-spacing':'2'
+  }, b.name));
+});
+
+// Center hub
+svg.appendChild(el('circle',{cx:CX,cy:CY,r:'35',fill:'#0d0d0d',stroke:'#333','stroke-width':'5'}));
+svg.appendChild(el('polygon',{points:`${CX},${CY-20} ${CX+17},${CY-10} ${CX+17},${CY+10} ${CX},${CY+20} ${CX-17},${CY+10} ${CX-17},${CY-10}`, fill:'#222'}));
+svg.appendChild(el('circle',{cx:CX,cy:CY,r:'6',fill:'#000'}));
+
+// SPIN LOGIC
+const wrap=document.getElementById('wheel-wrap'), btn=document.getElementById('spin-btn');
+const card=document.getElementById('result-card');
+const spotifyBtn=document.getElementById('spotify-btn');
+const albumsEl=document.getElementById('res-albums');
+const albumTitleEl=document.getElementById('res-album-title');
+const songsEl=document.getElementById('res-songs');
+let totalDeg=0, spinning=false;
+
+function resetSectors(){ 
+  sectors.forEach((p, i) => { 
+    p.setAttribute('fill', i % 2 === 0 ? '#141414' : '#0a0a0a'); 
+    p.setAttribute('stroke', '#2a2a2a');
+  });
+}
+
+function renderTracks(band, albumIndex){
+  const album = band.albums[albumIndex];
+  albumTitleEl.textContent = `[ ${album.title} - ${album.year} ]`;
+  songsEl.innerHTML = '';
+
+  album.tracks.forEach((trackData, trackIndex) => {
+    // Processa os dados, mantendo segurança para códigos não preenchidos
+    const trackName = trackData.name;
+    const trackId = trackData.id;
+
+    const btnTrack = document.createElement('button');
+    btnTrack.type = 'button';
+    btnTrack.className = 'track-btn';
+    btnTrack.innerHTML = `<span>0${trackIndex+1} // ${trackName}</span>`;
+    
+    // SISTEMA DE TIRO DIRETO INTELIGENTE:
+    btnTrack.addEventListener('click', () => {
+      if (trackId && trackId !== '') {
+        // Se a faixa tem ID cadastrado (ex: Linkin Park), ataca direto nela
+        window.location.href = `spotify:track:${trackId}`;
+      } else {
+        // Fallback: se não tiver o ID, abre a busca exata no app
+        const query = `track:${trackName} artist:${band.name}`;
+        window.location.href = `spotify:search:${encodeURIComponent(query)}`;
+      }
+    });
+    
+    songsEl.appendChild(btnTrack);
+  });
+}
+
+function renderBand(band){
+  albumsEl.innerHTML='';
+  band.albums.forEach((album,idx)=>{
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'album-pill';
+    if(idx===0) pill.classList.add('active');
+    pill.textContent = album.title;
+    
+    pill.addEventListener('click', () => {
+      albumsEl.querySelectorAll('.album-pill').forEach(el=>el.classList.remove('active'));
+      pill.classList.add('active');
+      renderTracks(band, idx);
+    });
+    albumsEl.appendChild(pill);
+  });
+  renderTracks(band, 0);
+}
+
+function spin(){
+  if(spinning)return;
+  spinning=true; btn.disabled=true; btn.textContent='SISTEMA TRAVADO...';
+  card.classList.remove('show');
+  spotifyBtn.classList.remove('active');
+  resetSectors();
+
+  // Faz o celular vibrar por 500 milissegundos
+  if (navigator.vibrate) {
+  navigator.vibrate([100, 50, 100, 50, 300]); // Padrão de vibração como uma batida de metal
+  }
+
+  const delta=(6+Math.floor(Math.random()*4))*360+Math.floor(Math.random()*360);
+  totalDeg+=delta;
+  wrap.style.transform=`rotate(${totalDeg}deg)`;
+
+  setTimeout(()=>{
+    const norm=((totalDeg%360)+360)%360;
+    const idx=Math.floor(((360-norm)%360)/STEP)%N;
+    const band=BANDS[idx];
+
+    sectors[idx].setAttribute('fill', '#cc0000');
+    sectors[idx].setAttribute('stroke', '#ff1a1a');
+
+    document.getElementById('res-band').textContent = band.name;
+    document.getElementById('res-msg').textContent = band.msg;
+    renderBand(band);
+
+    spotifyBtn.href = `spotify:search:${encodeURIComponent(band.name)}`;
+    document.getElementById('spotify-link-text').textContent = `OUVIR ${band.name} NO APP`;
+    spotifyBtn.classList.add('active');
+
+    card.classList.add('show');
+    btn.disabled=false; btn.textContent='GIRAR A MÁQUINA'; spinning=false;
+  }, 4500); 
+}
+
+btn.addEventListener('click', spin);
+</script>
+<!--
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('Service Worker registrado com sucesso:', registration.scope);
+        })
+        .catch(error => {
+          console.log('Falha ao registrar o Service Worker:', error);
+        });
+    });
+  }
+</script>
+-->
+</body>
+</html>
